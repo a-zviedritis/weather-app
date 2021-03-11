@@ -1,7 +1,5 @@
 package edu.weather.rest.model;
 
-import edu.weather.model.Location;
-import edu.weather.model.Weather;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -13,9 +11,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class WeatherInfo {
+public class WeatherResponse {
 
     private final String ip;
-    private Location location;
-    private Weather weather;
+    private LocationDTO location;
+    private WeatherDTO weather;
 }

@@ -1,4 +1,4 @@
-package edu.weather.model;
+package edu.weather.rest.model;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Weather {
+public class WeatherDTO {
 
     private Double temperature;
     private Double temperatureFeelsLike;

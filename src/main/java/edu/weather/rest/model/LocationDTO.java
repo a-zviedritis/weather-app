@@ -1,5 +1,6 @@
-package edu.weather.model;
+package edu.weather.rest.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,7 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Location {
+public class LocationDTO {
 
     private String continent;
     private String country;
