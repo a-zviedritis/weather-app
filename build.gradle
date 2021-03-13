@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'edu'
-version = '0.0.5-SNAPSHOT'
+version = '0.0.6-SNAPSHOT'
 sourceCompatibility = '11'
 
 configurations {
@@ -26,10 +26,13 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
-	implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+	implementation 'io.github.resilience4j:resilience4j-spring-boot2:1.6.1'
 
 	implementation 'javax.cache:cache-api'
 	implementation 'org.ehcache:ehcache'
+
+	implementation 'org.apache.httpcomponents:httpclient'
 
 	// https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
 	implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'

@@ -7,6 +7,7 @@ import edu.weather.service.weather.exception.WeatherDetectionException;
 import edu.weather.service.weather.model.IWeatherInfo;
 import edu.weather.service.weather.weatherapi.model.Error;
 import edu.weather.service.weather.weatherapi.model.WeatherResponse;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,7 @@ public class WeatherDetectionServiceImpl implements WeatherDetectionService {
 
     @Override
     @Cacheable(WeatherInfoCacheConfiguration.CACHE_NAME)
+    @CircuitBreaker(name = "weatherapi")
     public IWeatherInfo resolveWeatherInfo(double latitude, double longitude) throws LocationNotFoundException, WeatherDetectionException {
         String coordinates = new StringJoiner(",").add(String.valueOf(latitude)).add(String.valueOf(longitude)).toString();
         UriComponents uri = UriComponentsBuilder.newInstance()

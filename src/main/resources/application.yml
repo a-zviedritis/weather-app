@@ -13,3 +13,21 @@ weather:
   weatherapi:
     apiKey: 53f92237910c465dbb2193924210903
     host: api.weatherapi.com
+
+restTemplate:
+  connectTimeout: 1000
+  readTimeout: 3000
+
+resilience4j.circuitbreaker:
+  # Can't rely on defaults, something is overriding circuit OPEN state and still routes requests to the 'unhealthy' service
+  instances:
+    ipstack:
+      slidingWindowSize: 30
+      slowCallDurationThreshold: 250 # ms
+      slowCallRateThreshold: 50
+      waitDurationInOpenState: 30
+    weatherapi:
+      slidingWindowSize: 30
+      slowCallDurationThreshold: 250 # ms
+      slowCallRateThreshold: 50
+      waitDurationInOpenState: 30

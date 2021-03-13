@@ -1,4 +1,4 @@
-package edu.weather.cache;
+package edu.weather.config.cache;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.assertj.core.util.Lists;

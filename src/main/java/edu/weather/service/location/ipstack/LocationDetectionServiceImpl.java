@@ -5,6 +5,7 @@ import edu.weather.service.location.cache.LocationCacheConfiguration;
 import edu.weather.service.location.exception.LocationDetectionException;
 import edu.weather.service.location.ipstack.model.LocationResponse;
 import edu.weather.service.location.model.ILocation;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,7 @@ public class LocationDetectionServiceImpl implements LocationDetectionService {
 
     @Override
     @Cacheable(LocationCacheConfiguration.CACHE_NAME)
+    @CircuitBreaker(name = "ipstack")
     public ILocation resolveLocation(String ip) throws LocationDetectionException {
         UriComponents uri = UriComponentsBuilder.newInstance()
                 .scheme("http")
