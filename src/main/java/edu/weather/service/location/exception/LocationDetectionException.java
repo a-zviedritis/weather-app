@@ -13,4 +13,8 @@ public class LocationDetectionException extends Exception {
     public LocationDetectionException(String message) {
         super(message);
     }
+
+    public LocationDetectionException(Throwable t) {
+        super(t);
+    }
 }

@@ -1,6 +1,7 @@
 package edu.weather.service.location.ipstack.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import edu.weather.service.location.model.ILocation;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,7 +13,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Location {
+public class LocationResponse implements ILocation {
 
     @JsonProperty("continent_name")
     private String continent;

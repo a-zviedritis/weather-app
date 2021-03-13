@@ -1,7 +1,7 @@
 package edu.weather.rest.mapper;
 
 import edu.weather.rest.model.LocationDTO;
-import edu.weather.service.location.ipstack.model.Location;
+import edu.weather.service.location.ipstack.model.LocationResponse;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
@@ -19,7 +19,7 @@ public class LocationMapperTest {
 
     @Test
     public void testToDTO() {
-        Location location = new Location();
+        LocationResponse location = new LocationResponse();
         location.setCity(CITY);
         location.setCountry(COUNTRY);
         location.setContinent(CONTINENT);

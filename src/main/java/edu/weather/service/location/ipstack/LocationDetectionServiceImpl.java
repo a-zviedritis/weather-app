@@ -1,8 +1,9 @@
 package edu.weather.service.location.ipstack;
 
-import edu.weather.service.location.LocationService;
+import edu.weather.service.location.LocationDetectionService;
 import edu.weather.service.location.exception.LocationDetectionException;
-import edu.weather.service.location.ipstack.model.Location;
+import edu.weather.service.location.ipstack.model.LocationResponse;
+import edu.weather.service.location.model.ILocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,12 +11,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
- * Ipstack specific {@link LocationService} implementation.
+ * Ipstack specific {@link LocationDetectionService} implementation.
  *
  * @author andris
  * @since 1.0.0
@@ -23,9 +25,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Service
 @Qualifier("ipstack")
 @ConditionalOnProperty(name = "location.provider", havingValue = "ipstack", matchIfMissing = false)
-public class LocationServiceImpl implements LocationService {
+public class LocationDetectionServiceImpl implements LocationDetectionService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LocationServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocationDetectionServiceImpl.class);
 
     private final RestOperations restOperations;
 
@@ -36,28 +38,35 @@ public class LocationServiceImpl implements LocationService {
     private String host;
 
     @Autowired
-    public LocationServiceImpl(RestOperations restOperations) {
+    public LocationDetectionServiceImpl(RestOperations restOperations) {
         this.restOperations = restOperations;
     }
 
     @Override
-    public Location resolveLocation(String ip) throws LocationDetectionException {
+    public ILocation resolveLocation(String ip) throws LocationDetectionException {
         UriComponents uri = UriComponentsBuilder.newInstance()
                 .scheme("http")
                 .host(host)
                 .path(ip)
                 .queryParam("access_key", apiKey)
                 .build();
-        Location location = restOperations.getForObject(uri.toUri(), Location.class);
 
-        if (location == null) {
-            LOGGER.error("null received during location detection");
-            throw new LocationDetectionException();
-        } else if (!location.isSuccess()) {
-            LOGGER.error("Error received during location detection {}", location.getError().toString());
-            throw new LocationDetectionException(location.getError().getInfo());
+        LocationResponse response;
+        try {
+            response = restOperations.getForObject(uri.toUri(), LocationResponse.class);
+        } catch (HttpClientErrorException clientError) {
+            LOGGER.error(clientError.getMessage());
+            throw new LocationDetectionException(clientError);
         }
 
-        return location;
+        if (response == null) {
+            LOGGER.error("null received during location detection");
+            throw new LocationDetectionException();
+        } else if (!response.isSuccess()) {
+            LOGGER.error("Error received during location detection: {}", response.getError().toString());
+            throw new LocationDetectionException(response.getError().getInfo());
+        }
+
+        return response;
     }
 }
