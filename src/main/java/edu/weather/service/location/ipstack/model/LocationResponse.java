@@ -2,9 +2,12 @@ package edu.weather.service.location.ipstack.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.weather.service.location.model.ILocation;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.io.Serializable;
 
 /**
  * @author andris
@@ -13,7 +16,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class LocationResponse implements ILocation {
+@EqualsAndHashCode
+public class LocationResponse implements ILocation, Serializable {
+
+    private static final int serialVersionUID = -1;
 
     @JsonProperty("continent_name")
     private String continent;

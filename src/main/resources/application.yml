@@ -1,10 +1,14 @@
 location:
+  cache:
+    ttl: 600 # seconds
   provider: ipstack
   ipstack:
     apiKey: ccccc9e33d375483db0b4b5b1262a328
     host: api.ipstack.com
 
 weather:
+  cache:
+    ttl: 60 # seconds
   provider: weatherapi
   weatherapi:
     apiKey: 53f92237910c465dbb2193924210903

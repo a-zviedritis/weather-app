@@ -2,9 +2,12 @@ package edu.weather.service.weather.weatherapi.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.weather.service.weather.model.IWeatherInfo;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.io.Serializable;
 
 /**
  * @author andris
@@ -13,7 +16,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class WeatherInfo implements IWeatherInfo {
+@EqualsAndHashCode
+public class WeatherInfo implements IWeatherInfo, Serializable {
+
+    private static final int serialVersionUID = -1;
 
     @JsonProperty("temp_c")
     private Double temperature;
@@ -45,7 +51,10 @@ public class WeatherInfo implements IWeatherInfo {
     @Getter
     @Setter
     @NoArgsConstructor
-    public static class Condition {
+    @EqualsAndHashCode
+    public static class Condition implements Serializable {
+
+        private static final int serialVersionUID = -1;
 
         private String text;
     }

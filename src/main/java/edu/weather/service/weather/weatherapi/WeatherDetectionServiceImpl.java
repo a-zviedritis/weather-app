@@ -1,6 +1,7 @@
 package edu.weather.service.weather.weatherapi;
 
 import edu.weather.service.weather.WeatherDetectionService;
+import edu.weather.service.weather.cache.WeatherInfoCacheConfiguration;
 import edu.weather.service.weather.exception.LocationNotFoundException;
 import edu.weather.service.weather.exception.WeatherDetectionException;
 import edu.weather.service.weather.model.IWeatherInfo;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestOperations;
@@ -47,6 +49,7 @@ public class WeatherDetectionServiceImpl implements WeatherDetectionService {
     }
 
     @Override
+    @Cacheable(WeatherInfoCacheConfiguration.CACHE_NAME)
     public IWeatherInfo resolveWeatherInfo(double latitude, double longitude) throws LocationNotFoundException, WeatherDetectionException {
         String coordinates = new StringJoiner(",").add(String.valueOf(latitude)).add(String.valueOf(longitude)).toString();
         UriComponents uri = UriComponentsBuilder.newInstance()

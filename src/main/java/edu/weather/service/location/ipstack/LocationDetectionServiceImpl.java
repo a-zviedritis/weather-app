@@ -1,6 +1,7 @@
 package edu.weather.service.location.ipstack;
 
 import edu.weather.service.location.LocationDetectionService;
+import edu.weather.service.location.cache.LocationCacheConfiguration;
 import edu.weather.service.location.exception.LocationDetectionException;
 import edu.weather.service.location.ipstack.model.LocationResponse;
 import edu.weather.service.location.model.ILocation;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestOperations;
@@ -43,6 +45,7 @@ public class LocationDetectionServiceImpl implements LocationDetectionService {
     }
 
     @Override
+    @Cacheable(LocationCacheConfiguration.CACHE_NAME)
     public ILocation resolveLocation(String ip) throws LocationDetectionException {
         UriComponents uri = UriComponentsBuilder.newInstance()
                 .scheme("http")
