@@ -1,5 +1,6 @@
 package edu.weather.service;
 
+import edu.weather.repository.location.LocationRepository;
 import edu.weather.service.location.LocationDetectionService;
 import edu.weather.service.location.model.ILocation;
 import edu.weather.service.weather.WeatherDetectionService;
@@ -24,12 +25,15 @@ public class WeatherService {
 
     private final LocationDetectionService locationService;
     private final WeatherDetectionService weatherService;
+    private final LocationRepository locationRepository;
 
     @Autowired
     public WeatherService(LocationDetectionService locationService,
-                          WeatherDetectionService weatherService) {
+                          WeatherDetectionService weatherService,
+                          LocationRepository locationRepository) {
         this.locationService = locationService;
         this.weatherService = weatherService;
+        this.locationRepository = locationRepository;
     }
 
     /**
@@ -46,12 +50,24 @@ public class WeatherService {
     }
 
     private ILocation detectLocation(String ip) {
+        ILocation location;
         try {
-            return locationService.resolveLocation(ip);
+            location = locationService.resolveLocation(ip);
         } catch (Exception e) {
             LOGGER.error("Error during location detection: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to detect location info", e);
         }
+
+        try {
+            if (!locationRepository.locationExists(ip)) {
+                locationRepository.saveLocation(ip, location);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Error during persisting location information: {}", e.getMessage());
+            // Do not kill the flow - continue without saving
+        }
+
+        return location;
     }
 
     private IWeatherInfo resolveWeatherInfo(ILocation location) {

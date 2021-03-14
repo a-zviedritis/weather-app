@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'edu'
-version = '0.0.6-SNAPSHOT'
+version = '0.0.7-SNAPSHOT'
 sourceCompatibility = '11'
 
 configurations {
@@ -27,7 +27,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
 	implementation 'org.springframework.boot:spring-boot-starter-aop'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 	implementation 'io.github.resilience4j:resilience4j-spring-boot2:1.6.1'
+
+	implementation 'com.h2database:h2'
 
 	implementation 'javax.cache:cache-api'
 	implementation 'org.ehcache:ehcache'
