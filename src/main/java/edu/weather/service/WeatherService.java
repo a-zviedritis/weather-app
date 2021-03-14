@@ -62,6 +62,7 @@ public class WeatherService {
             if (!locationRepository.locationExists(ip)) {
                 locationRepository.saveLocation(ip, location);
             }
+            locationRepository.auditLogAccess(ip);
         } catch (Exception e) {
             LOGGER.error("Error during persisting location information: {}", e.getMessage());
             // Do not kill the flow - continue without saving

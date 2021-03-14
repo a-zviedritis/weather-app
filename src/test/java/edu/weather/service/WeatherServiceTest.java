@@ -60,6 +60,7 @@ public class WeatherServiceTest {
         when(locationServiceMock.resolveLocation(anyString())).thenReturn(location);
         when(weatherServiceMock.resolveWeatherInfo(any(Double.class), any(Double.class))).thenReturn(weatherInfo);
         when(locationRepositoryMock.locationExists(anyString())).thenReturn(true);
+        doNothing().when(locationRepositoryMock).auditLogAccess(anyString());
 
         Pair<ILocation, IWeatherInfo> response = service.detectWeather(DUMMY_IP);
 
@@ -70,6 +71,7 @@ public class WeatherServiceTest {
         verify(locationServiceMock, times(1)).resolveLocation(eq(DUMMY_IP));
         verify(weatherServiceMock, times(1)).resolveWeatherInfo(eq(location.getLatitude()), eq(location.getLongitude()));
         verify(locationRepositoryMock, times(1)).locationExists(DUMMY_IP);
+        verify(locationRepositoryMock, times(1)).auditLogAccess(DUMMY_IP);
         verifyNoMoreInteractions(locationServiceMock, weatherServiceMock, locationRepositoryMock);
     }
 
@@ -79,6 +81,7 @@ public class WeatherServiceTest {
         when(weatherServiceMock.resolveWeatherInfo(any(Double.class), any(Double.class))).thenReturn(weatherInfo);
         when(locationRepositoryMock.locationExists(anyString())).thenReturn(false);
         doNothing().when(locationRepositoryMock).saveLocation(anyString(), any());
+        doNothing().when(locationRepositoryMock).auditLogAccess(anyString());
 
         Pair<ILocation, IWeatherInfo> response = service.detectWeather(DUMMY_IP);
 
@@ -90,6 +93,7 @@ public class WeatherServiceTest {
         verify(weatherServiceMock, times(1)).resolveWeatherInfo(eq(location.getLatitude()), eq(location.getLongitude()));
         verify(locationRepositoryMock, times(1)).locationExists(DUMMY_IP);
         verify(locationRepositoryMock, times(1)).saveLocation(DUMMY_IP, location);
+        verify(locationRepositoryMock, times(1)).auditLogAccess(DUMMY_IP);
         verifyNoMoreInteractions(locationServiceMock, weatherServiceMock, locationRepositoryMock);
     }
 
@@ -108,11 +112,75 @@ public class WeatherServiceTest {
     }
 
     @Test
+    public void testDetectWeatherWhenLocationExistenceCheckFails() throws Exception {
+        Exception exception = new Exception("JDBC BOOM");
+        when(locationServiceMock.resolveLocation(anyString())).thenReturn(location);
+        when(weatherServiceMock.resolveWeatherInfo(any(Double.class), any(Double.class))).thenReturn(weatherInfo);
+        when(locationRepositoryMock.locationExists(anyString())).thenThrow(exception);
+
+        Pair<ILocation, IWeatherInfo> response = service.detectWeather(DUMMY_IP);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getKey()).isEqualTo(location);
+        assertThat(response.getValue()).isEqualTo(weatherInfo);
+
+        verify(locationServiceMock, times(1)).resolveLocation(eq(DUMMY_IP));
+        verify(weatherServiceMock, times(1)).resolveWeatherInfo(eq(location.getLatitude()), eq(location.getLongitude()));
+        verify(locationRepositoryMock, times(1)).locationExists(DUMMY_IP);
+        verifyNoMoreInteractions(locationServiceMock, weatherServiceMock, locationRepositoryMock);
+    }
+
+    @Test
+    public void testDetectWeatherWhenLocationSavingFails() throws Exception {
+        Exception exception = new Exception("JDBC BOOM");
+        when(locationServiceMock.resolveLocation(anyString())).thenReturn(location);
+        when(weatherServiceMock.resolveWeatherInfo(any(Double.class), any(Double.class))).thenReturn(weatherInfo);
+        when(locationRepositoryMock.locationExists(anyString())).thenReturn(false);
+        doThrow(exception).when(locationRepositoryMock).saveLocation(anyString(), any());
+
+        Pair<ILocation, IWeatherInfo> response = service.detectWeather(DUMMY_IP);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getKey()).isEqualTo(location);
+        assertThat(response.getValue()).isEqualTo(weatherInfo);
+
+        verify(locationServiceMock, times(1)).resolveLocation(eq(DUMMY_IP));
+        verify(weatherServiceMock, times(1)).resolveWeatherInfo(eq(location.getLatitude()), eq(location.getLongitude()));
+        verify(locationRepositoryMock, times(1)).locationExists(DUMMY_IP);
+        verify(locationRepositoryMock, times(1)).saveLocation(DUMMY_IP, location);
+        verifyNoMoreInteractions(locationServiceMock, weatherServiceMock, locationRepositoryMock);
+    }
+
+    @Test
+    public void testDetectWeatherAndLocationAccessAuditLogFails() throws Exception {
+        Exception exception = new Exception("JDBC BOOM");
+        when(locationServiceMock.resolveLocation(anyString())).thenReturn(location);
+        when(weatherServiceMock.resolveWeatherInfo(any(Double.class), any(Double.class))).thenReturn(weatherInfo);
+        when(locationRepositoryMock.locationExists(anyString())).thenReturn(false);
+        doNothing().when(locationRepositoryMock).saveLocation(anyString(), any());
+        doThrow(exception).when(locationRepositoryMock).auditLogAccess(anyString());
+
+        Pair<ILocation, IWeatherInfo> response = service.detectWeather(DUMMY_IP);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getKey()).isEqualTo(location);
+        assertThat(response.getValue()).isEqualTo(weatherInfo);
+
+        verify(locationServiceMock, times(1)).resolveLocation(eq(DUMMY_IP));
+        verify(weatherServiceMock, times(1)).resolveWeatherInfo(eq(location.getLatitude()), eq(location.getLongitude()));
+        verify(locationRepositoryMock, times(1)).locationExists(DUMMY_IP);
+        verify(locationRepositoryMock, times(1)).saveLocation(DUMMY_IP, location);
+        verify(locationRepositoryMock, times(1)).auditLogAccess(DUMMY_IP);
+        verifyNoMoreInteractions(locationServiceMock, weatherServiceMock, locationRepositoryMock);
+    }
+
+    @Test
     public void testDetectWeatherWhenLocationCannotBeResolved() throws Exception {
         Throwable cause = new LocationNotFoundException("");
         when(locationServiceMock.resolveLocation(anyString())).thenReturn(location);
         when(weatherServiceMock.resolveWeatherInfo(any(Double.class), any(Double.class))).thenThrow(cause);
         when(locationRepositoryMock.locationExists(anyString())).thenReturn(true);
+        doNothing().when(locationRepositoryMock).auditLogAccess(anyString());
 
         assertThatThrownBy(() -> service.detectWeather(DUMMY_IP))
                 .isInstanceOf(ResponseStatusException.class)
@@ -121,6 +189,7 @@ public class WeatherServiceTest {
         verify(locationServiceMock, times(1)).resolveLocation(eq(DUMMY_IP));
         verify(weatherServiceMock, times(1)).resolveWeatherInfo(eq(location.getLatitude()), eq(location.getLongitude()));
         verify(locationRepositoryMock, times(1)).locationExists(DUMMY_IP);
+        verify(locationRepositoryMock, times(1)).auditLogAccess(DUMMY_IP);
         verifyNoMoreInteractions(locationServiceMock, weatherServiceMock, locationRepositoryMock);
     }
 
@@ -130,6 +199,7 @@ public class WeatherServiceTest {
         when(locationServiceMock.resolveLocation(anyString())).thenReturn(location);
         when(weatherServiceMock.resolveWeatherInfo(any(Double.class), any(Double.class))).thenThrow(cause);
         when(locationRepositoryMock.locationExists(anyString())).thenReturn(true);
+        doNothing().when(locationRepositoryMock).auditLogAccess(anyString());
 
         assertThatThrownBy(() -> service.detectWeather(DUMMY_IP))
                 .isInstanceOf(ResponseStatusException.class)
@@ -138,6 +208,7 @@ public class WeatherServiceTest {
         verify(locationServiceMock, times(1)).resolveLocation(eq(DUMMY_IP));
         verify(weatherServiceMock, times(1)).resolveWeatherInfo(eq(location.getLatitude()), eq(location.getLongitude()));
         verify(locationRepositoryMock, times(1)).locationExists(DUMMY_IP);
+        verify(locationRepositoryMock, times(1)).auditLogAccess(DUMMY_IP);
         verifyNoMoreInteractions(locationServiceMock, weatherServiceMock, locationRepositoryMock);
     }
 }

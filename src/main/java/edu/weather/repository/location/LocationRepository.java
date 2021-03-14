@@ -25,4 +25,11 @@ public interface LocationRepository {
      * @param location Geolocation information
      */
     void saveLocation(String ip, ILocation location) throws Exception;
+
+    /**
+     * Saves a geolocation access instance.
+     *
+     * @param ip IP address for which access has been made
+     */
+    void auditLogAccess(String ip) throws Exception;
 }

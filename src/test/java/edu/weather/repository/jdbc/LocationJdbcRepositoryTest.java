@@ -29,16 +29,19 @@ public class LocationJdbcRepositoryTest {
 
     private static LocationJdbcRepository repository;
     private static SimpleJdbcInsertOperations locationInsertMock;
+    private static SimpleJdbcInsertOperations locationAccessInsertMock;
     private static NamedParameterJdbcOperations parameterJdbcOperationsMock;
     private static SqlRowSet rsMock;
 
     @BeforeAll
     public static void beforeAll() {
         locationInsertMock = mock(SimpleJdbcInsertOperations.class);
+        locationAccessInsertMock = mock(SimpleJdbcInsertOperations.class);
         parameterJdbcOperationsMock = mock(NamedParameterJdbcOperations.class);
 
         repository = new LocationJdbcRepository(mock(DataSource.class));
         ReflectionTestUtils.setField(repository, "locationInsert", locationInsertMock);
+        ReflectionTestUtils.setField(repository, "locationAccessInsert", locationAccessInsertMock);
         ReflectionTestUtils.setField(repository, "parameterJdbcOperations", parameterJdbcOperationsMock);
 
         rsMock = mock(SqlRowSet.class);
@@ -46,7 +49,7 @@ public class LocationJdbcRepositoryTest {
 
     @BeforeEach
     public void beforeEach() {
-        reset(locationInsertMock, parameterJdbcOperationsMock, rsMock);
+        reset(locationInsertMock, locationAccessInsertMock, parameterJdbcOperationsMock, rsMock);
     }
 
     @Test
@@ -61,7 +64,7 @@ public class LocationJdbcRepositoryTest {
         verify(parameterJdbcOperationsMock, times(1)).queryForRowSet(anyString(), captor.capture());
         verify(rsMock, times(1)).next();
         verifyNoMoreInteractions(parameterJdbcOperationsMock, rsMock);
-        verifyNoInteractions(locationInsertMock);
+        verifyNoInteractions(locationInsertMock, locationAccessInsertMock);
 
         MapSqlParameterSource caughtParams = captor.getValue();
         assertThat(caughtParams).isNotNull();
@@ -81,7 +84,7 @@ public class LocationJdbcRepositoryTest {
         verify(parameterJdbcOperationsMock, times(1)).queryForRowSet(anyString(), captor.capture());
         verify(rsMock, times(1)).next();
         verifyNoMoreInteractions(parameterJdbcOperationsMock, rsMock);
-        verifyNoInteractions(locationInsertMock);
+        verifyNoInteractions(locationInsertMock, locationAccessInsertMock);
 
         MapSqlParameterSource caughtParams = captor.getValue();
         assertThat(caughtParams).isNotNull();
@@ -100,7 +103,7 @@ public class LocationJdbcRepositoryTest {
 
         verify(parameterJdbcOperationsMock, times(1)).queryForRowSet(anyString(), any(SqlParameterSource.class));
         verifyNoMoreInteractions(parameterJdbcOperationsMock);
-        verifyNoInteractions(locationInsertMock, rsMock);
+        verifyNoInteractions(locationInsertMock, rsMock, locationAccessInsertMock);
     }
 
     @Test
@@ -120,7 +123,7 @@ public class LocationJdbcRepositoryTest {
 
         verify(locationInsertMock, times(1)).execute(captor.capture());
         verifyNoMoreInteractions(locationInsertMock);
-        verifyNoInteractions(parameterJdbcOperationsMock, rsMock);
+        verifyNoInteractions(parameterJdbcOperationsMock, rsMock, locationAccessInsertMock);
 
         MapSqlParameterSource caughtParams = captor.getValue();
         assertThat(caughtParams).isNotNull();
@@ -151,6 +154,38 @@ public class LocationJdbcRepositoryTest {
 
         verify(locationInsertMock, times(1)).execute(any(SqlParameterSource.class));
         verifyNoMoreInteractions(locationInsertMock);
-        verifyNoInteractions(parameterJdbcOperationsMock, rsMock);
+        verifyNoInteractions(parameterJdbcOperationsMock, rsMock, locationAccessInsertMock);
+    }
+
+    @Test
+    public void testAuditLogAccess() throws Exception {
+        when(locationAccessInsertMock.execute(any(SqlParameterSource.class))).thenReturn(1);
+
+        repository.auditLogAccess(IP);
+
+        ArgumentCaptor<MapSqlParameterSource> captor = ArgumentCaptor.forClass(MapSqlParameterSource.class);
+
+        verify(locationAccessInsertMock, times(1)).execute(captor.capture());
+        verifyNoMoreInteractions(locationAccessInsertMock);
+        verifyNoInteractions(parameterJdbcOperationsMock, rsMock, locationInsertMock);
+
+        MapSqlParameterSource caughtParams = captor.getValue();
+        assertThat(caughtParams).isNotNull();
+        assertThat(caughtParams.getParameterNames()).containsExactlyInAnyOrder("ip", "timestamp");
+        assertThat(caughtParams.getValue("ip")).isEqualTo(IP);
+    }
+
+    @Test
+    public void testAuditLogAccessWhenDataAccessException() {
+        DataAccessException dae = new InvalidDataAccessResourceUsageException("");
+        when(locationAccessInsertMock.execute(any(SqlParameterSource.class))).thenThrow(dae);
+
+        assertThatThrownBy(() -> repository.auditLogAccess(IP))
+                .isInstanceOf(Exception.class)
+                .hasCause(dae);
+
+        verify(locationAccessInsertMock, times(1)).execute(any(SqlParameterSource.class));
+        verifyNoMoreInteractions(locationAccessInsertMock);
+        verifyNoInteractions(parameterJdbcOperationsMock, rsMock, locationInsertMock);
     }
 }

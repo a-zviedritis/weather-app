@@ -15,6 +15,9 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.time.Instant;
 import java.util.function.Supplier;
 
 /**
@@ -31,6 +34,7 @@ public class LocationJdbcRepository implements LocationRepository {
 
     private final NamedParameterJdbcOperations parameterJdbcOperations;
     private final SimpleJdbcInsertOperations locationInsert;
+    private final SimpleJdbcInsertOperations locationAccessInsert;
 
     @Autowired
     public LocationJdbcRepository(DataSource ds) {
@@ -39,6 +43,9 @@ public class LocationJdbcRepository implements LocationRepository {
         locationInsert = new SimpleJdbcInsert(ds)
                 .withTableName("geolocation")
                 .usingColumns("ip", "continent", "country", "city", "longitude", "latitude");
+        locationAccessInsert = new SimpleJdbcInsert(ds)
+                .withTableName("geolocation_access")
+                .usingColumns("ip", "timestamp");
     }
 
     @Override
@@ -61,6 +68,15 @@ public class LocationJdbcRepository implements LocationRepository {
         params.addValue("latitude", location.getLatitude());
 
         executeWithErrorHandling(() -> locationInsert.execute(params));
+    }
+
+    @Override
+    public void auditLogAccess(String ip) throws Exception {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("ip", ip);
+        params.addValue("timestamp", Timestamp.from(Instant.now()), Types.TIMESTAMP);
+
+        executeWithErrorHandling(() -> locationAccessInsert.execute(params));
     }
 
     private <T> T executeWithErrorHandling(Supplier<T> action) throws Exception {
