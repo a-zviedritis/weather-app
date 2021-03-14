@@ -25,6 +25,7 @@ weather:
   weatherapi:
     apiKey: 53f92237910c465dbb2193924210903
     host: api.weatherapi.com
+  saveInterval: PT15M
 
 restTemplate:
   connectTimeout: 1000

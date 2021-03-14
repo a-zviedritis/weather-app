@@ -1,6 +1,7 @@
 package edu.weather.service;
 
 import edu.weather.repository.location.LocationRepository;
+import edu.weather.repository.weather.WeatherConditionsRepository;
 import edu.weather.service.location.LocationDetectionService;
 import edu.weather.service.location.model.ILocation;
 import edu.weather.service.weather.WeatherDetectionService;
@@ -10,9 +11,13 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.Duration;
+import java.time.Instant;
 
 /**
  * @author andris
@@ -25,15 +30,22 @@ public class WeatherService {
 
     private final LocationDetectionService locationService;
     private final WeatherDetectionService weatherService;
+
     private final LocationRepository locationRepository;
+    private final WeatherConditionsRepository weatherConditionsRepository;
+
+    @Value("${weather.saveInterval:PT30M}")
+    private Duration weatherConditionSaveInterval;
 
     @Autowired
     public WeatherService(LocationDetectionService locationService,
                           WeatherDetectionService weatherService,
-                          LocationRepository locationRepository) {
+                          LocationRepository locationRepository,
+                          WeatherConditionsRepository weatherConditionsRepository) {
         this.locationService = locationService;
         this.weatherService = weatherService;
         this.locationRepository = locationRepository;
+        this.weatherConditionsRepository = weatherConditionsRepository;
     }
 
     /**
@@ -72,13 +84,26 @@ public class WeatherService {
     }
 
     private IWeatherInfo resolveWeatherInfo(ILocation location) {
+        IWeatherInfo weatherInfo;
         try {
-            return weatherService.resolveWeatherInfo(location.getLatitude(), location.getLongitude());
+            weatherInfo = weatherService.resolveWeatherInfo(location.getLatitude(), location.getLongitude());
         } catch (LocationNotFoundException lnfe) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, lnfe.getMessage(), lnfe);
         } catch (Exception e) {
             LOGGER.error("Error during weather detection: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to detect weather info", e);
         }
+
+        try {
+            Instant lastSavedWeatherConditions = weatherConditionsRepository.getLastReportedConditionTimestamp(location.getLatitude(), location.getLongitude());
+            if (lastSavedWeatherConditions == null || Duration.between(lastSavedWeatherConditions, Instant.now()).compareTo(weatherConditionSaveInterval) >= 0) {
+                weatherConditionsRepository.saveWeatherConditions(location.getLatitude(), location.getLongitude(), weatherInfo);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Error during persisting weather information: {}", e.getMessage());
+            // Do not kill the flow - continue without saving
+        }
+
+        return weatherInfo;
     }
 }

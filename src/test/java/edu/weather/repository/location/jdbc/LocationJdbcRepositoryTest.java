@@ -1,6 +1,5 @@
-package edu.weather.repository.jdbc;
+package edu.weather.repository.location.jdbc;
 
-import edu.weather.repository.location.jdbc.LocationJdbcRepository;
 import edu.weather.service.location.ipstack.model.LocationResponse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
