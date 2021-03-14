@@ -26,7 +26,7 @@ public class LocationJdbcRepository implements LocationRepository {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LocationJdbcRepository.class);
 
-    private static final String SELECT_EVERYTHING_FROM_GEOLOCATION = "select continent, country, city, longitude, latitude from geolocation where ip = :ips";
+    private static final String SELECT_EVERYTHING_FROM_GEOLOCATION = "select continent, country, city, longitude, latitude from geolocation where ip = :ip";
     private static final String CHECK_IF_LOCATION_EXISTS = String.format("select 1 from geolocation where exists (%s)", SELECT_EVERYTHING_FROM_GEOLOCATION);
 
     private final NamedParameterJdbcOperations parameterJdbcOperations;
