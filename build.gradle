@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'edu'
-version = '0.0.11-SNAPSHOT'
+version = '1.0.0'
 sourceCompatibility = '11'
 
 configurations {
@@ -41,6 +41,7 @@ dependencies {
 	// https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
 	implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
 
+	implementation 'org.springdoc:springdoc-openapi-ui:1.5.2'
 
 	// Lombok
 	compileOnly 'org.projectlombok:lombok'

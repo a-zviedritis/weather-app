@@ -70,6 +70,9 @@ public class LocationDetectionServiceImpl implements LocationDetectionService {
         } else if (!response.isSuccess()) {
             LOGGER.error("Error received during location detection: {}", response.getError().toString());
             throw new LocationDetectionException(response.getError().getInfo());
+        } else if (response.isEmpty()) {
+            LOGGER.error("Cannot resolve location for IP address {}", ip);
+            throw new LocationDetectionException("Cannot resolve location for IP address");
         }
 
         return response;

@@ -20,6 +20,9 @@ import java.sql.Types;
 import java.time.Instant;
 import java.util.function.Supplier;
 
+import static edu.weather.repository.location.jdbc.DBSchema.GeolocationAccessTable;
+import static edu.weather.repository.location.jdbc.DBSchema.GeolocationTable;
+
 /**
  * @author andris
  * @since 1.0.0
@@ -29,8 +32,12 @@ public class LocationJdbcRepository implements LocationRepository {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LocationJdbcRepository.class);
 
-    private static final String SELECT_EVERYTHING_FROM_GEOLOCATION = "select continent, country, city, longitude, latitude from geolocation where ip = :ip";
-    private static final String CHECK_IF_LOCATION_EXISTS = String.format("select 1 from geolocation where exists (%s)", SELECT_EVERYTHING_FROM_GEOLOCATION);
+    private static final String SELECT_EVERYTHING_FROM_GEOLOCATION =
+            String.format("select continent, country, city, longitude, latitude from geolocation where ip = :%s",
+                    GeolocationTable.COLUMN_IP);
+    private static final String CHECK_IF_LOCATION_EXISTS =
+            String.format("select 1 from geolocation where exists (%s)",
+                    SELECT_EVERYTHING_FROM_GEOLOCATION);
 
     private final NamedParameterJdbcOperations parameterJdbcOperations;
     private final SimpleJdbcInsertOperations locationInsert;
@@ -41,17 +48,27 @@ public class LocationJdbcRepository implements LocationRepository {
         this.parameterJdbcOperations = new NamedParameterJdbcTemplate(ds);
 
         locationInsert = new SimpleJdbcInsert(ds)
-                .withTableName("geolocation")
-                .usingColumns("ip", "continent", "country", "city", "longitude", "latitude");
+                .withTableName(GeolocationTable.TABLE_NAME)
+                .usingColumns(
+                        GeolocationTable.COLUMN_IP,
+                        GeolocationTable.COLUMN_CONTINENT,
+                        GeolocationTable.COLUMN_COUNTRY,
+                        GeolocationTable.COLUMN_CITY,
+                        GeolocationTable.COLUMN_LONGITUDE,
+                        GeolocationTable.COLUMN_LATITUDE
+                );
         locationAccessInsert = new SimpleJdbcInsert(ds)
-                .withTableName("geolocation_access")
-                .usingColumns("ip", "timestamp");
+                .withTableName(GeolocationAccessTable.TABLE_NAME)
+                .usingColumns(
+                        GeolocationAccessTable.COLUMN_IP,
+                        GeolocationAccessTable.COLUMN_TIMESTAMP
+                );
     }
 
     @Override
     public boolean locationExists(String ip) throws Exception {
         MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("ip", ip);
+        params.addValue(GeolocationTable.COLUMN_IP, ip);
 
         SqlRowSet rs = executeWithErrorHandling(() -> parameterJdbcOperations.queryForRowSet(CHECK_IF_LOCATION_EXISTS, params));
         return rs.next();
@@ -60,12 +77,12 @@ public class LocationJdbcRepository implements LocationRepository {
     @Override
     public void saveLocation(String ip, ILocation location) throws Exception {
         MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("ip", ip);
-        params.addValue("continent", location.getContinent());
-        params.addValue("country", location.getCountry());
-        params.addValue("city", location.getCity());
-        params.addValue("longitude", location.getLongitude());
-        params.addValue("latitude", location.getLatitude());
+        params.addValue(GeolocationTable.COLUMN_IP, ip);
+        params.addValue(GeolocationTable.COLUMN_CONTINENT, location.getContinent());
+        params.addValue(GeolocationTable.COLUMN_COUNTRY, location.getCountry());
+        params.addValue(GeolocationTable.COLUMN_CITY, location.getCity());
+        params.addValue(GeolocationTable.COLUMN_LONGITUDE, location.getLongitude());
+        params.addValue(GeolocationTable.COLUMN_LATITUDE, location.getLatitude());
 
         executeWithErrorHandling(() -> locationInsert.execute(params));
     }
@@ -73,8 +90,8 @@ public class LocationJdbcRepository implements LocationRepository {
     @Override
     public void auditLogAccess(String ip) throws Exception {
         MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("ip", ip);
-        params.addValue("timestamp", Timestamp.from(Instant.now()), Types.TIMESTAMP);
+        params.addValue(GeolocationAccessTable.COLUMN_IP, ip);
+        params.addValue(GeolocationAccessTable.COLUMN_TIMESTAMP, Timestamp.from(Instant.now()), Types.TIMESTAMP);
 
         executeWithErrorHandling(() -> locationAccessInsert.execute(params));
     }

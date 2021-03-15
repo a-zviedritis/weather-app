@@ -16,6 +16,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.sql.DataSource;
 
+import static edu.weather.repository.location.jdbc.DBSchema.GeolocationAccessTable.COLUMN_TIMESTAMP;
+import static edu.weather.repository.location.jdbc.DBSchema.GeolocationTable.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -67,8 +69,8 @@ public class LocationJdbcRepositoryTest {
 
         MapSqlParameterSource caughtParams = captor.getValue();
         assertThat(caughtParams).isNotNull();
-        assertThat(caughtParams.getParameterNames()).containsExactlyInAnyOrder("ip");
-        assertThat(caughtParams.getValue("ip")).isEqualTo(IP);
+        assertThat(caughtParams.getParameterNames()).containsExactlyInAnyOrder(COLUMN_IP);
+        assertThat(caughtParams.getValue(COLUMN_IP)).isEqualTo(IP);
     }
 
     @Test
@@ -87,8 +89,8 @@ public class LocationJdbcRepositoryTest {
 
         MapSqlParameterSource caughtParams = captor.getValue();
         assertThat(caughtParams).isNotNull();
-        assertThat(caughtParams.getParameterNames()).containsExactlyInAnyOrder("ip");
-        assertThat(caughtParams.getValue("ip")).isEqualTo(IP);
+        assertThat(caughtParams.getParameterNames()).containsExactlyInAnyOrder(COLUMN_IP);
+        assertThat(caughtParams.getValue(COLUMN_IP)).isEqualTo(IP);
     }
 
     @Test
@@ -126,13 +128,13 @@ public class LocationJdbcRepositoryTest {
 
         MapSqlParameterSource caughtParams = captor.getValue();
         assertThat(caughtParams).isNotNull();
-        assertThat(caughtParams.getParameterNames()).containsExactlyInAnyOrder("ip", "continent", "country", "city", "longitude", "latitude");
-        assertThat(caughtParams.getValue("ip")).isEqualTo(IP);
-        assertThat(caughtParams.getValue("continent")).isEqualTo(location.getContinent());
-        assertThat(caughtParams.getValue("country")).isEqualTo(location.getCountry());
-        assertThat(caughtParams.getValue("city")).isEqualTo(location.getCity());
-        assertThat(caughtParams.getValue("longitude")).isEqualTo(location.getLongitude());
-        assertThat(caughtParams.getValue("latitude")).isEqualTo(location.getLatitude());
+        assertThat(caughtParams.getParameterNames()).containsExactlyInAnyOrder(COLUMN_IP, COLUMN_CONTINENT, COLUMN_COUNTRY, COLUMN_CITY, COLUMN_LONGITUDE, COLUMN_LATITUDE);
+        assertThat(caughtParams.getValue(COLUMN_IP)).isEqualTo(IP);
+        assertThat(caughtParams.getValue(COLUMN_CONTINENT)).isEqualTo(location.getContinent());
+        assertThat(caughtParams.getValue(COLUMN_COUNTRY)).isEqualTo(location.getCountry());
+        assertThat(caughtParams.getValue(COLUMN_CITY)).isEqualTo(location.getCity());
+        assertThat(caughtParams.getValue(COLUMN_LONGITUDE)).isEqualTo(location.getLongitude());
+        assertThat(caughtParams.getValue(COLUMN_LATITUDE)).isEqualTo(location.getLatitude());
     }
 
     @Test
@@ -170,8 +172,8 @@ public class LocationJdbcRepositoryTest {
 
         MapSqlParameterSource caughtParams = captor.getValue();
         assertThat(caughtParams).isNotNull();
-        assertThat(caughtParams.getParameterNames()).containsExactlyInAnyOrder("ip", "timestamp");
-        assertThat(caughtParams.getValue("ip")).isEqualTo(IP);
+        assertThat(caughtParams.getParameterNames()).containsExactlyInAnyOrder(DBSchema.GeolocationAccessTable.COLUMN_IP, COLUMN_TIMESTAMP);
+        assertThat(caughtParams.getValue(DBSchema.GeolocationAccessTable.COLUMN_IP)).isEqualTo(IP);
     }
 
     @Test

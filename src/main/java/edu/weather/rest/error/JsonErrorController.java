@@ -1,5 +1,6 @@
 package edu.weather.rest.error;
 
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.boot.autoconfigure.web.servlet.error.AbstractErrorController;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
@@ -26,6 +27,7 @@ public class JsonErrorController extends AbstractErrorController {
         super(errorAttributes);
     }
 
+    @Operation(hidden = true)
     @GetMapping
     public ResponseEntity<Map<String, Object>> error(final HttpServletRequest request) {
         final Map<String, Object> body = this.getErrorAttributes(request, ErrorAttributeOptions.of(ErrorAttributeOptions.Include.MESSAGE));

@@ -108,4 +108,16 @@ public class LocationDetectionServiceImplTest {
         verify(restMock, times(1)).getForObject(any(), eq(LocationResponse.class));
         verifyNoMoreInteractions(restMock);
     }
+
+    @Test
+    public void testResolveLocationWhenEmptyResponse() {
+        when(restMock.getForObject(any(), eq(LocationResponse.class))).thenReturn(new LocationResponse());
+
+        assertThatThrownBy(() -> service.resolveLocation(DUMMY_IP))
+                .isInstanceOf(LocationDetectionException.class)
+                .hasMessage("Cannot resolve location for IP address");
+
+        verify(restMock, times(1)).getForObject(any(), eq(LocationResponse.class));
+        verifyNoMoreInteractions(restMock);
+    }
 }

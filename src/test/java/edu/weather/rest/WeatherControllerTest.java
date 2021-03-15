@@ -14,10 +14,12 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 public class WeatherControllerTest {
@@ -96,5 +98,14 @@ public class WeatherControllerTest {
         verify(locationMapperMock, times(1)).toDTO(eq(location));
         verify(weatherMapperMock, times(1)).toDTO(eq(weatherInfo));
         verifyNoMoreInteractions(serviceMock, locationMapperMock, weatherMapperMock);
+    }
+
+    @Test
+    public void testDetectWeatherWithIPv6Address() {
+        assertThatThrownBy(() -> controller.detectWeather("0:0:0:0:0:0:0:1", requestMock))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Invalid IPv4 address detected/provided");
+
+        verifyNoInteractions(serviceMock, locationMapperMock, weatherMapperMock);
     }
 }

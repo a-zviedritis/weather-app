@@ -18,6 +18,7 @@ import javax.sql.DataSource;
 import java.sql.Timestamp;
 import java.time.Instant;
 
+import static edu.weather.repository.weather.jdbc.DBSchema.WeatherConditionTable.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
@@ -105,9 +106,9 @@ public class WeatherConditionsJdbcRepositoryTest {
 
         MapSqlParameterSource caughtParams = captor.getValue();
         assertThat(caughtParams).isNotNull();
-        assertThat(caughtParams.getParameterNames()).containsExactlyInAnyOrder("latitude", "longitude");
-        assertThat(caughtParams.getValue("latitude")).isEqualTo(LATITUDE);
-        assertThat(caughtParams.getValue("longitude")).isEqualTo(LONGITUDE);
+        assertThat(caughtParams.getParameterNames()).containsExactlyInAnyOrder(COLUMN_LATITUDE, COLUMN_LONGITUDE);
+        assertThat(caughtParams.getValue(COLUMN_LATITUDE)).isEqualTo(LATITUDE);
+        assertThat(caughtParams.getValue(COLUMN_LONGITUDE)).isEqualTo(LONGITUDE);
     }
 
     @Test
@@ -148,15 +149,15 @@ public class WeatherConditionsJdbcRepositoryTest {
 
         MapSqlParameterSource caughtParams = captor.getValue();
         assertThat(caughtParams).isNotNull();
-        assertThat(caughtParams.getParameterNames()).containsExactlyInAnyOrder("latitude", "longitude", "condition", "temperature", "humidity", "wind_speed", "gust_speed", "wind_direction", "timestamp");
-        assertThat(caughtParams.getValue("latitude")).isEqualTo(LATITUDE);
-        assertThat(caughtParams.getValue("longitude")).isEqualTo(LONGITUDE);
-        assertThat(caughtParams.getValue("condition")).isEqualTo(wi.getCondition());
-        assertThat(caughtParams.getValue("temperature")).isEqualTo(wi.getTemperature());
-        assertThat(caughtParams.getValue("humidity")).isEqualTo(wi.getHumidity());
-        assertThat(caughtParams.getValue("wind_speed")).isEqualTo(wi.getWindSpeed());
-        assertThat(caughtParams.getValue("gust_speed")).isEqualTo(wi.getGustSpeed());
-        assertThat(caughtParams.getValue("wind_direction")).isEqualTo(wi.getWindDirection());
+        assertThat(caughtParams.getParameterNames()).containsExactlyInAnyOrder(COLUMN_LATITUDE, COLUMN_LONGITUDE, COLUMN_CONDITION, COLUMN_TEMPERATURE, COLUMN_HUMIDITY, COLUMN_WIND_SPEED, COLUMN_GUST_SPEED, COLUMN_WIND_DIRECTION, COLUMN_TIMESTAMP);
+        assertThat(caughtParams.getValue(COLUMN_LATITUDE)).isEqualTo(LATITUDE);
+        assertThat(caughtParams.getValue(COLUMN_LONGITUDE)).isEqualTo(LONGITUDE);
+        assertThat(caughtParams.getValue(COLUMN_CONDITION)).isEqualTo(wi.getCondition());
+        assertThat(caughtParams.getValue(COLUMN_TEMPERATURE)).isEqualTo(wi.getTemperature());
+        assertThat(caughtParams.getValue(COLUMN_HUMIDITY)).isEqualTo(wi.getHumidity());
+        assertThat(caughtParams.getValue(COLUMN_WIND_SPEED)).isEqualTo(wi.getWindSpeed());
+        assertThat(caughtParams.getValue(COLUMN_GUST_SPEED)).isEqualTo(wi.getGustSpeed());
+        assertThat(caughtParams.getValue(COLUMN_WIND_DIRECTION)).isEqualTo(wi.getWindDirection());
     }
 
     @Test

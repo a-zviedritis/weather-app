@@ -1,6 +1,5 @@
 package edu.weather.service.weather.weatherapi;
 
-import edu.weather.service.location.ipstack.model.LocationResponse;
 import edu.weather.service.weather.WeatherDetectionService;
 import edu.weather.service.weather.exception.LocationNotFoundException;
 import edu.weather.service.weather.exception.WeatherDetectionException;
@@ -121,7 +120,7 @@ public class WeatherDetectionServiceImplTest {
 
     @Test
     public void testResolveWeatherInfoWhenHttpClientError() {
-        when(restMock.getForObject(any(), eq(LocationResponse.class))).thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED, "BOOM"));
+        when(restMock.getForObject(any(), eq(WeatherResponse.class))).thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED, "BOOM"));
 
         assertThatThrownBy(() -> service.resolveWeatherInfo(LATITUDE, LONGITUDE))
                 .isInstanceOf(WeatherDetectionException.class);

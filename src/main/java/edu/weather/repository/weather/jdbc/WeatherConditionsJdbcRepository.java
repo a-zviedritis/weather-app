@@ -20,6 +20,8 @@ import java.sql.Types;
 import java.time.Instant;
 import java.util.function.Supplier;
 
+import static edu.weather.repository.weather.jdbc.DBSchema.WeatherConditionTable;
+
 /**
  * @author andris
  * @since 1.0.0
@@ -29,7 +31,9 @@ public class WeatherConditionsJdbcRepository implements WeatherConditionsReposit
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WeatherConditionsJdbcRepository.class);
 
-    private static final String LAST_REPORTED_TIMESTAMP = "select timestamp from weather_condition where latitude = :latitude and longitude = :longitude order by timestamp limit 1";
+    private static final String LAST_REPORTED_TIMESTAMP =
+            String.format("select timestamp from weather_condition where latitude = :%s and longitude = :%s order by timestamp limit 1",
+                    WeatherConditionTable.COLUMN_LATITUDE, WeatherConditionTable.COLUMN_LONGITUDE);
 
     private final NamedParameterJdbcOperations parameterJdbcOperations;
     private final SimpleJdbcInsertOperations weatherConditionsInsert;
@@ -39,15 +43,25 @@ public class WeatherConditionsJdbcRepository implements WeatherConditionsReposit
         this.parameterJdbcOperations = new NamedParameterJdbcTemplate(ds);
 
         this.weatherConditionsInsert = new SimpleJdbcInsert(ds)
-                .withTableName("weather_condition")
-                .usingColumns("longitude", "latitude", "condition", "temperature", "humidity", "wind_speed", "gust_speed", "wind_direction", "timestamp");
+                .withTableName(WeatherConditionTable.TABLE_NAME)
+                .usingColumns(
+                        WeatherConditionTable.COLUMN_LONGITUDE,
+                        WeatherConditionTable.COLUMN_LATITUDE,
+                        WeatherConditionTable.COLUMN_CONDITION,
+                        WeatherConditionTable.COLUMN_TEMPERATURE,
+                        WeatherConditionTable.COLUMN_HUMIDITY,
+                        WeatherConditionTable.COLUMN_WIND_SPEED,
+                        WeatherConditionTable.COLUMN_GUST_SPEED,
+                        WeatherConditionTable.COLUMN_WIND_DIRECTION,
+                        WeatherConditionTable.COLUMN_TIMESTAMP
+                );
     }
 
     @Override
     public Instant getLastReportedConditionTimestamp(Double latitude, Double longitude) throws Exception {
         MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("longitude", longitude);
-        params.addValue("latitude", latitude);
+        params.addValue(WeatherConditionTable.COLUMN_LONGITUDE, longitude);
+        params.addValue(WeatherConditionTable.COLUMN_LATITUDE, latitude);
 
         SqlRowSet rs = executeWithErrorHandling(() -> parameterJdbcOperations.queryForRowSet(LAST_REPORTED_TIMESTAMP, params));
 
@@ -65,15 +79,15 @@ public class WeatherConditionsJdbcRepository implements WeatherConditionsReposit
     @Override
     public void saveWeatherConditions(Double latitude, Double longitude, IWeatherInfo weatherInfo) throws Exception {
         MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("longitude", longitude);
-        params.addValue("latitude", latitude);
-        params.addValue("condition", weatherInfo.getCondition());
-        params.addValue("temperature", weatherInfo.getTemperature());
-        params.addValue("humidity", weatherInfo.getHumidity());
-        params.addValue("wind_speed", weatherInfo.getWindSpeed());
-        params.addValue("gust_speed", weatherInfo.getGustSpeed());
-        params.addValue("wind_direction", weatherInfo.getWindDirection());
-        params.addValue("timestamp", Timestamp.from(Instant.now()), Types.TIMESTAMP);
+        params.addValue(WeatherConditionTable.COLUMN_LONGITUDE, longitude);
+        params.addValue(WeatherConditionTable.COLUMN_LATITUDE, latitude);
+        params.addValue(WeatherConditionTable.COLUMN_CONDITION, weatherInfo.getCondition());
+        params.addValue(WeatherConditionTable.COLUMN_TEMPERATURE, weatherInfo.getTemperature());
+        params.addValue(WeatherConditionTable.COLUMN_HUMIDITY, weatherInfo.getHumidity());
+        params.addValue(WeatherConditionTable.COLUMN_WIND_SPEED, weatherInfo.getWindSpeed());
+        params.addValue(WeatherConditionTable.COLUMN_GUST_SPEED, weatherInfo.getGustSpeed());
+        params.addValue(WeatherConditionTable.COLUMN_WIND_DIRECTION, weatherInfo.getWindDirection());
+        params.addValue(WeatherConditionTable.COLUMN_TIMESTAMP, Timestamp.from(Instant.now()), Types.TIMESTAMP);
 
         executeWithErrorHandling(() -> weatherConditionsInsert.execute(params));
     }
